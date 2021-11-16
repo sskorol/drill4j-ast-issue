@@ -1,27 +1,74 @@
-# Drill4jAstIssue
+# Drill4j AST Issue
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 13.0.2.
+### Install
 
-## Development server
+```shell
+git clone https://github.com/sskorol/drill4j-ast-issue.git && cd drill4j-ast-issue
+npm install
+npm run ast
+```
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+### Experiments and results interpretation
 
-## Code scaffolding
+During initial run, you'll fail with the following message, which doesn't seem like a valid line number.
+```shell
+Processing sources
+         src/main.ts
+         src/test.ts
+         src/app/app-routing.module.ts
+         src/app/app.component.spec.ts
+         src/app/app.component.ts
+         failed to parse src/app/app.component.ts due to
+ {"index":342,"lineNumber":14,"column":9,"message":"'}' expected."} 
+```
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+When you comment line 12:
+```typescript
+brokenField = <any>{};
+```
 
-## Build
+This error will disappear, but you'll see the following:
+```shell
+Processing sources
+         src/main.ts
+         src/test.ts
+         src/app/app-routing.module.ts
+         src/app/app.component.spec.ts
+         src/app/app.component.ts
+         failed to parse src/app/app.component.ts due to
+ {"index":567,"lineNumber":22,"column":18,"message":"JSX element 'HTMLStyleElement' has no corresponding closing tag."}
+```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Which is also incorrect, as it's not a JSX tag, but rather a typecasting syntax.
 
-## Running unit tests
+If you remove `<HTMLStyleElement>` from line 22:
+```typescript
+stylesEl = <HTMLStyleElement>document.createElement('style');
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+You'll get a new error:
+```shell
+Processing sources
+         src/main.ts
+         src/test.ts
+         src/app/app-routing.module.ts
+         src/app/app.component.spec.ts
+         src/app/app.component.ts
+         failed to parse src/app/app.component.ts due to
+ {"index":597,"lineNumber":22,"column":48,"message":"'}' expected."} 
+```
 
-## Running end-to-end tests
+That's also confusing, as it refers to the same line. The root cause is at line 20:
+```typescript
+let stylesEl = <HTMLStyleElement>window.document.getElementById(AppComponent.dummyStylesElementId);
+```
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+If you replace it with the following and re-run, you'll see a "green" build:
+```typescript
+let stylesEl = window.document.getElementById(AppComponent.dummyStylesElementId) as HTMLStyleElement;
+```
 
-## Further help
+So I see 2 issues here:
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+- Incorrect work with a diamond operator `<>` which is used for typecasting.
+- Treating the same operator as a JSX tag.
