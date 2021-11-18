@@ -5,22 +5,33 @@
     ],
     "ignore": [
       "src/**/*.d.ts",
-      "src/**/polyfills.ts"
+      "src/**/polyfills*.ts"
     ]
   },
   "bundle": {
     "pattern": "dist/**/*.js",
-    "ignore": ["dist/**/polyfills.js"]
+    "ignore": [
+      "dist/polyfills*.js",
+      "dist/assets/**/*",
+      "dist/xlsx*.js",
+      "dist/pdfmake*.js",
+      "dist/canvg*.js"
+    ]
   },
   "sourcemaps": {
     "pattern": [
       "dist/**/*.js.map"
     ],
-    "ignore": ["dist/**/polyfills.js.map"]
+    "ignore": [
+      "dist/polyfills*.js.map",
+      "dist/xlsx*.js.map",
+      "dist/pdfmake*.js.map",
+      "dist/canvg*.js.map"
+    ]
   },
   "output": {
-    "agentId": "default-agent-id",
-    "groupId": "default-group-id",
+    "agentId": "plannuh-agent",
+    "groupId": "com.plannuh",
     "agentApiUrl": "http://localhost:9404"
   }
 }
